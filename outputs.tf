@@ -13,9 +13,9 @@ output "namespace" {
   description = "Normalized namespace"
 }
 
-output "environment" {
-  value       = local.environment
-  description = "Normalized environment"
+output "region" {
+  value       = local.region
+  description = "Normalized region"
 }
 
 output "name" {
@@ -30,7 +30,7 @@ output "stage" {
 
 output "delimiter" {
   value       = local.delimiter
-  description = "Delimiter between `namespace`, `tenant`, `environment`, `stage`, `name` and `attributes`"
+  description = "Delimiter between `namespace`, `tenant`, `region`, `stage`, `name` and `attributes`"
 }
 
 output "attributes" {

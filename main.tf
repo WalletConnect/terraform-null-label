@@ -3,7 +3,7 @@ locals {
   # Default values
 
   defaults = {
-    label_order         = ["namespace", "environment", "stage", "name", "attributes"]
+    label_order         = ["namespace", "region", "stage", "name", "attributes"]
     regex_replace_chars = "/[^-a-zA-Z0-9]/"
     delimiter           = "-"
     replacement         = ""
@@ -20,11 +20,11 @@ locals {
   id_hash_length = local.defaults.id_hash_length
 
   input = {
-    namespace   = var.namespace == null ? var.context.namespace : var.namespace
-    environment = var.environment == null ? var.context.environment : var.environment
-    stage       = var.stage == null ? var.context.stage : var.stage
-    name        = var.name == null ? var.context.name : var.name
-    delimiter   = var.delimiter == null ? var.context.delimiter : var.delimiter
+    namespace = var.namespace == null ? var.context.namespace : var.namespace
+    region    = var.region == null ? var.context.region : var.region
+    stage     = var.stage == null ? var.context.stage : var.stage
+    name      = var.name == null ? var.context.name : var.name
+    delimiter = var.delimiter == null ? var.context.delimiter : var.delimiter
     # modules tack on attributes (passed by var) to the end of the list (passed by context)
     attributes = compact(distinct(concat(coalesce(var.context.attributes, []), coalesce(var.attributes, []))))
     tags       = merge(var.context.tags, var.tags)
@@ -42,7 +42,7 @@ locals {
   # Labels
 
   # string_label_names are names of inputs that are strings (not list of strings) used as labels
-  string_label_names = ["namespace", "environment", "stage", "name"]
+  string_label_names = ["namespace", "region", "stage", "name"]
   normalized_labels = { for k in local.string_label_names : k =>
     local.input[k] == null ? "" : replace(local.input[k], local.regex_replace_chars, local.replacement)
   }
@@ -59,10 +59,10 @@ locals {
     local.label_value_case == "upper" ? upper(v) : lower(v))
   ]))
 
-  namespace   = local.formatted_labels["namespace"]
-  environment = local.formatted_labels["environment"]
-  stage       = local.formatted_labels["stage"]
-  name        = local.formatted_labels["name"]
+  namespace = local.formatted_labels["namespace"]
+  region    = local.formatted_labels["region"]
+  stage     = local.formatted_labels["stage"]
+  name      = local.formatted_labels["name"]
 
   delimiter        = local.input.delimiter == null ? local.defaults.delimiter : local.input.delimiter
   label_order      = local.input.label_order == null ? local.defaults.label_order : coalescelist(local.input.label_order, local.defaults.label_order)
@@ -75,9 +75,9 @@ locals {
   # Tags
 
   tags_context = {
-    namespace   = local.namespace
-    environment = local.environment
-    stage       = local.stage
+    namespace = local.namespace
+    region    = local.region
+    stage     = local.stage
     # For AWS we need `Name` to be disambiguated since it has a special meaning
     name       = local.id
     attributes = local.id_context.attributes
@@ -96,11 +96,11 @@ locals {
   # ID Generation
 
   id_context = {
-    namespace   = local.namespace
-    environment = local.environment
-    stage       = local.stage
-    name        = local.name
-    attributes  = join(local.delimiter, local.attributes)
+    namespace  = local.namespace
+    region     = local.region
+    stage      = local.stage
+    name       = local.name
+    attributes = join(local.delimiter, local.attributes)
   }
 
   labels = [for l in local.label_order : local.id_context[l] if length(local.id_context[l]) > 0]
@@ -126,7 +126,7 @@ locals {
   # Context of this label to pass to other label modules
   output_context = {
     namespace           = local.namespace
-    environment         = local.environment
+    region              = local.region
     stage               = local.stage
     name                = local.name
     delimiter           = local.delimiter
